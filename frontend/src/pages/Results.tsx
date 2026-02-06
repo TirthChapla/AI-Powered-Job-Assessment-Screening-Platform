@@ -1,5 +1,6 @@
 import { useNavigate, useParams } from 'react-router-dom';
 import { Zap, LogOut, ArrowLeft, TrendingUp, Users, Award, Download, AlertTriangle } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, Radar, PieChart, Pie, Cell } from 'recharts';
 
 interface User {
@@ -77,7 +78,8 @@ export default function Results({ user, onLogout }: ResultsProps) {
               <span className="text-2xl font-bold text-gray-900">HireIQ</span>
             </div>
           </div>
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <span className="text-gray-700 font-medium">{user.name}</span>
             <button
               onClick={onLogout}

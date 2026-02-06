@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Zap, LogOut, MessageCircle, Send, Mic, MicOff, Brain, Clock } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
+import { isAssessmentCompleted } from '../data/storage';
 
 interface User {
   id: string;
@@ -24,6 +26,7 @@ interface Message {
 export default function Interview({ user, onLogout }: InterviewProps) {
   const navigate = useNavigate();
   const { assessmentId } = useParams();
+  const isCompleted = assessmentId ? isAssessmentCompleted(assessmentId, user.id) : false;
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputMessage, setInputMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
@@ -41,6 +44,7 @@ export default function Interview({ user, onLogout }: InterviewProps) {
   ];
 
   useEffect(() => {
+    if (!isCompleted) return;
     const initialMessage: Message = {
       id: '1',
       sender: 'ai',
@@ -54,7 +58,26 @@ export default function Interview({ user, onLogout }: InterviewProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [user.name]);
+  }, [isCompleted, user.name]);
+
+  if (!isCompleted) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center px-6">
+        <div className="bg-white border border-gray-100 rounded-2xl shadow-lg p-8 max-w-lg w-full text-center">
+          <div className="text-2xl font-bold text-gray-900 mb-2">Interview Locked</div>
+          <p className="text-gray-600 mb-6">
+            Complete the assessment to unlock the AI interview.
+          </p>
+          <button
+            onClick={() => navigate('/candidate')}
+            className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition"
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -116,7 +139,8 @@ export default function Interview({ user, onLogout }: InterviewProps) {
               <div className="text-sm text-gray-600">Senior Frontend Developer</div>
             </div>
           </div>
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <div className="flex items-center space-x-2 px-4 py-2 bg-blue-50 border border-blue-200 rounded-lg">
               <Clock className="w-5 h-5 text-blue-600" />
               <span className="font-mono text-lg font-semibold text-blue-600">{formatTime(timeElapsed)}</span>

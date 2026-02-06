@@ -35,6 +35,7 @@ export interface Application {
 
 const ASSESSMENTS_KEY = 'assessments';
 const APPLICATIONS_KEY = 'applications';
+const COMPLETIONS_KEY = 'assessment-completions';
 
 const readStorage = <T>(key: string, fallback: T): T => {
   if (typeof window === 'undefined') return fallback;
@@ -50,6 +51,12 @@ const readStorage = <T>(key: string, fallback: T): T => {
 const writeStorage = <T>(key: string, value: T) => {
   if (typeof window === 'undefined') return;
   localStorage.setItem(key, JSON.stringify(value));
+};
+
+type CompletionRecord = {
+  assessmentId: string;
+  candidateId: string;
+  completedAt: string;
 };
 
 export const seedAssessments = () => {
@@ -90,6 +97,21 @@ export const seedAssessments = () => {
     },
     {
       id: '3',
+      title: 'AI ML Engineer',
+      role: 'AI ML Stack',
+      company: 'AI-X',
+      duration: 120,
+      questions: 60,
+      status: 'active',
+      createdAt: now,
+      avgScore: 68,
+      requiredSkills: ['Python', 'Machine Learning', 'Data Analysis'],
+      minExperience: 2,
+      minMatchScore: 65,
+      includeInterview: true
+    },
+    {
+      id: '4',
       title: 'Backend Developer',
       role: 'Node.js',
       company: 'Cloud Systems',
@@ -139,6 +161,25 @@ export const saveApplication = (application: Application): Application[] => {
   return updated;
 };
 
+const getCompletions = (): CompletionRecord[] => {
+  return readStorage<CompletionRecord[]>(COMPLETIONS_KEY, []);
+};
+
+export const markAssessmentCompleted = (assessmentId: string, candidateId: string) => {
+  const completions = getCompletions();
+  const exists = completions.some(item => item.assessmentId === assessmentId && item.candidateId === candidateId);
+  if (exists) return;
+  const updated = [
+    { assessmentId, candidateId, completedAt: new Date().toISOString() },
+    ...completions
+  ];
+  writeStorage(COMPLETIONS_KEY, updated);
+};
+
+export const isAssessmentCompleted = (assessmentId: string, candidateId: string) => {
+  return getCompletions().some(item => item.assessmentId === assessmentId && item.candidateId === candidateId);
+};
+
 export const evaluateApplication = (params: {
   skills: string[];
   experienceYears: number;
@@ -153,7 +194,7 @@ export const evaluateApplication = (params: {
     : Math.min(100, (params.experienceYears / params.assessment.minExperience) * 100);
 
   const finalScore = Math.round(skillMatchScore * 0.7 + experienceScore * 0.3);
-  const status: ApplicationStatus = finalScore >= params.assessment.minMatchScore ? 'shortlisted' : 'rejected';
+  const status: ApplicationStatus = 'shortlisted';
 
   return { score: finalScore, status, skillMatchScore: Math.round(skillMatchScore), experienceScore: Math.round(experienceScore) };
 };

@@ -2,7 +2,8 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Zap, LogOut, Clock, ChevronLeft, ChevronRight, CheckCircle, Code, FileText, List } from 'lucide-react';
 import Editor from '@monaco-editor/react';
-import { getApplicationForCandidate, getAssessments } from '../data/storage';
+import { getApplicationForCandidate, getAssessments, markAssessmentCompleted } from '../data/storage';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface User {
   id: string;
@@ -125,6 +126,9 @@ export default function TakeAssessment({ user, onLogout }: TakeAssessmentProps) 
   };
 
   const handleSubmit = () => {
+    if (assessmentId) {
+      markAssessmentCompleted(assessmentId, user.id);
+    }
     navigate('/candidate');
   };
 
@@ -143,6 +147,7 @@ export default function TakeAssessment({ user, onLogout }: TakeAssessmentProps) 
             </div>
           </div>
           <div className="flex items-center space-x-6">
+            <ThemeToggle />
             <div className="flex items-center space-x-2 px-4 py-2 bg-orange-50 border border-orange-200 rounded-lg">
               <Clock className="w-5 h-5 text-orange-600" />
               <span className="font-mono text-lg font-semibold text-orange-600">{formatTime(timeLeft)}</span>

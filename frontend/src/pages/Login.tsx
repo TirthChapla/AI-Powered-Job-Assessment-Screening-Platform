@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Zap, Mail, Lock, LogIn } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface LoginProps {
   onLogin: (user: { id: string; email: string; role: 'recruiter' | 'candidate'; name: string }) => void;
@@ -41,9 +42,10 @@ export default function Login({ onLogin }: LoginProps) {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 flex items-center justify-center px-6">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
+          <div className="flex items-center justify-center space-x-3 mb-4">
             <Zap className="w-10 h-10 text-blue-600" />
             <span className="text-3xl font-bold text-gray-900">HireIQ</span>
+            <ThemeToggle />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
           <p className="text-gray-600">Sign in to continue to your dashboard</p>

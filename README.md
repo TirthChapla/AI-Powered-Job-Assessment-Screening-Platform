@@ -74,8 +74,8 @@ In addition to written tests, the platform also features an **AI-powered Intervi
 ## Tech Stack
 
 Frontend:
-- React.js (.jsx)
-- vanilla CSS
+- React.js (.tsx)
+- talwind CSS
 - Monaco Editor
 - Chart.js / Recharts
 

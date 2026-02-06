@@ -7,6 +7,7 @@ import RecruiterDashboard from './pages/RecruiterDashboard';
 import CandidateDashboard from './pages/CandidateDashboard';
 import CreateAssessment from './pages/CreateAssessment';
 import ApplyAssessment from './pages/ApplyAssessment';
+import AssessmentDetails from './pages/AssessmentDetails';
 import TakeAssessment from './pages/TakeAssessment';
 import Interview from './pages/Interview';
 import Results from './pages/Results';
@@ -62,6 +63,7 @@ function App() {
         <Route path="/recruiter/leaderboard/:assessmentId" element={user?.role === 'recruiter' ? <Leaderboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
 
         <Route path="/candidate" element={user?.role === 'candidate' ? <CandidateDashboard user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
+        <Route path="/candidate/assessment/:assessmentId/details" element={user?.role === 'candidate' ? <AssessmentDetails user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
         <Route path="/candidate/apply/:assessmentId" element={user?.role === 'candidate' ? <ApplyAssessment user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
         <Route path="/candidate/assessment/:assessmentId" element={user?.role === 'candidate' ? <TakeAssessment user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />
         <Route path="/candidate/interview/:assessmentId" element={user?.role === 'candidate' ? <Interview user={user} onLogout={handleLogout} /> : <Navigate to="/login" />} />

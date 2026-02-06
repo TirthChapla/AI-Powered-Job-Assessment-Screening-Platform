@@ -2,6 +2,67 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Dark theme overrides */
+html.dark body {
+	background-color: #0b1220;
+	color: #e2e8f0;
+}
+
+html.dark .bg-white {
+	background-color: #0f172a;
+}
+
+html.dark .bg-gray-50 {
+	background-color: #0b1220;
+}
+
+html.dark .bg-gray-100 {
+	background-color: #111827;
+}
+
+html.dark .bg-blue-50 {
+	background-color: #0b2a4a;
+}
+
+html.dark .text-gray-900 {
+	color: #f8fafc;
+}
+
+html.dark .text-gray-700 {
+	color: #cbd5f5;
+}
+
+html.dark .text-gray-600,
+html.dark .text-gray-500,
+html.dark .text-gray-400 {
+	color: #94a3b8;
+}
+
+html.dark .border-gray-100,
+html.dark .border-gray-200 {
+	border-color: #1f2937;
+}
+
+html.dark .border-gray-300 {
+	border-color: #334155;
+}
+
+html.dark .hover\:bg-gray-50:hover {
+	background-color: #0f1b2d;
+}
+
+html.dark input,
+html.dark textarea,
+html.dark select {
+	background-color: #0f172a;
+	color: #e2e8f0;
+	border-color: #334155;
+}
+
+html.dark ::placeholder {
+	color: #94a3b8;
+}
+
 /* Hide Bolt badge/watermark injected by hosting */
 #bolt-badge,
 #bolt-watermark,

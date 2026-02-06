@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Briefcase, Brain, Target, Shield, BarChart3, Zap, CheckCircle, TrendingUp } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 
 export default function Landing() {
   const navigate = useNavigate();
@@ -53,7 +54,8 @@ export default function Landing() {
             <Zap className="w-8 h-8 text-blue-600" />
             <span className="text-2xl font-bold text-gray-900">HireIQ</span>
           </div>
-          <div className="flex space-x-4">
+          <div className="flex items-center space-x-3">
+            <ThemeToggle />
             <button
               onClick={() => navigate('/login')}
               className="px-6 py-2 text-gray-700 hover:text-blue-600 font-medium transition"

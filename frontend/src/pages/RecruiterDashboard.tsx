@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Zap, Plus, Users, FileText, BarChart3, LogOut, Search, Calendar, TrendingUp } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 import { getApplicationsForAssessment, getAssessments, seedAssessments } from '../data/storage';
 
 interface User {
@@ -49,7 +50,8 @@ export default function RecruiterDashboard({ user, onLogout }: RecruiterDashboar
             <Zap className="w-8 h-8 text-blue-600" />
             <span className="text-2xl font-bold text-gray-900">HireIQ</span>
           </div>
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <span className="text-gray-700 font-medium">{user.name}</span>
             <button
               onClick={onLogout}

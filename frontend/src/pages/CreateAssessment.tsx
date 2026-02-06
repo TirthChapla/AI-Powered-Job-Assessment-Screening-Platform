@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Zap, LogOut, ArrowLeft, Sparkles, FileText, Clock, Target, Brain } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 import { saveAssessment } from '../data/storage';
 
 interface User {
@@ -104,7 +105,8 @@ export default function CreateAssessment({ user, onLogout }: CreateAssessmentPro
               <span className="text-2xl font-bold text-gray-900">HireIQ</span>
             </div>
           </div>
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <span className="text-gray-700 font-medium">{user.name}</span>
             <button
               onClick={onLogout}

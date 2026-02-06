@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Zap, Mail, Lock, User, UserCheck } from 'lucide-react';
+import ThemeToggle from '../components/ThemeToggle';
 
 interface SignupProps {
   onLogin: (user: { id: string; email: string; role: 'recruiter' | 'candidate'; name: string }) => void;
@@ -43,9 +44,10 @@ export default function Signup({ onLogin }: SignupProps) {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-slate-50 flex items-center justify-center px-6 py-12">
       <div className="max-w-md w-full">
         <div className="text-center mb-8">
-          <div className="flex items-center justify-center space-x-2 mb-4">
+          <div className="flex items-center justify-center space-x-3 mb-4">
             <Zap className="w-10 h-10 text-blue-600" />
             <span className="text-3xl font-bold text-gray-900">HireIQ</span>
+            <ThemeToggle />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
           <p className="text-gray-600">Join the future of AI-powered hiring</p>

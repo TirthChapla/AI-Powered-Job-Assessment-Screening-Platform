@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Zap, LogOut, Search, FileText, Clock, CheckCircle, XCircle, Play, Award } from 'lucide-react';
-import { Assessment, Application, getApplicationForCandidate, getAssessments, seedAssessments } from '../data/storage';
+import ThemeToggle from '../components/ThemeToggle';
+import { Assessment, Application, getApplicationForCandidate, getAssessments, isAssessmentCompleted, seedAssessments } from '../data/storage';
 
 interface User {
   id: string;
@@ -73,7 +74,8 @@ export default function CandidateDashboard({ user, onLogout }: CandidateDashboar
             <Zap className="w-8 h-8 text-blue-600" />
             <span className="text-2xl font-bold text-gray-900">HireIQ</span>
           </div>
-          <div className="flex items-center space-x-6">
+          <div className="flex items-center space-x-4">
+            <ThemeToggle />
             <span className="text-gray-700 font-medium">{user.name}</span>
             <button
               onClick={onLogout}
@@ -119,10 +121,18 @@ export default function CandidateDashboard({ user, onLogout }: CandidateDashboar
           <div className="divide-y divide-gray-200">
             {filteredAssessments.map((assessment) => {
               const application = getApplication(assessment.id);
+              const isCompleted = isAssessmentCompleted(assessment.id, user.id);
               const status = application ? application.status : 'not_applied';
 
               return (
-              <div key={assessment.id} className="p-6 hover:bg-gray-50 transition">
+              <div
+                key={assessment.id}
+                className="p-6 hover:bg-gray-50 transition cursor-pointer"
+                role="button"
+                tabIndex={0}
+                onClick={() => navigate(`/candidate/assessment/${assessment.id}/details`)}
+                onKeyDown={(e) => e.key === 'Enter' && navigate(`/candidate/assessment/${assessment.id}/details`)}
+              >
                 <div className="flex justify-between items-start">
                   <div className="flex-1">
                     <div className="flex items-center space-x-3 mb-2">
@@ -142,10 +152,10 @@ export default function CandidateDashboard({ user, onLogout }: CandidateDashboar
                         <FileText className="w-4 h-4" />
                         <span>{assessment.questions} questions</span>
                       </div>
-                      {assessment.includeInterview && (
+                      {assessment.includeInterview && isCompleted && (
                         <div className="flex items-center space-x-1 text-blue-600">
                           <Zap className="w-4 h-4" />
-                          <span>Includes AI Interview</span>
+                          <span>AI Interview unlocked</span>
                         </div>
                       )}
                     </div>
@@ -164,7 +174,10 @@ export default function CandidateDashboard({ user, onLogout }: CandidateDashboar
                   <div className="ml-6 flex flex-col space-y-2">
                     {!application && (
                       <button
-                        onClick={() => navigate(`/candidate/apply/${assessment.id}`)}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          navigate(`/candidate/apply/${assessment.id}`);
+                        }}
                         className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition shadow-md hover:shadow-lg"
                       >
                         Apply Now
@@ -173,14 +186,20 @@ export default function CandidateDashboard({ user, onLogout }: CandidateDashboar
                     {application?.status === 'shortlisted' && (
                       <>
                         <button
-                          onClick={() => navigate(`/candidate/assessment/${assessment.id}`)}
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/candidate/assessment/${assessment.id}`);
+                          }}
                           className="px-6 py-2.5 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition shadow-md hover:shadow-lg"
                         >
                           Start Assessment
                         </button>
-                        {assessment.includeInterview && (
+                        {assessment.includeInterview && isCompleted && (
                           <button
-                            onClick={() => navigate(`/candidate/interview/${assessment.id}`)}
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              navigate(`/candidate/interview/${assessment.id}`);
+                            }}
                             className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition shadow-md hover:shadow-lg"
                           >
                             AI Interview
