@@ -48,9 +48,7 @@ export default function RecruiterCandidateDetails({ user, onLogout }: RecruiterC
 
   const displayCandidate = candidate ?? undefined;
   const displaySubmission = submission ?? undefined;
-  const displayInterviewSubmission = undefined;
   const displayAnswers = displaySubmission?.answers as Record<string, any> | undefined;
-  const interviewAnswers = displayInterviewSubmission?.answers as Record<string, string> | undefined;
 
   if (loading) {
     return (
@@ -156,7 +154,7 @@ export default function RecruiterCandidateDetails({ user, onLogout }: RecruiterC
             </div>
             <div>
               <div className="text-sm text-gray-600">Applied On</div>
-              <div className="text-lg font-semibold text-gray-900">{new Date(displayCandidate.createdAt).toLocaleDateString()}</div>
+              <div className="text-lg font-semibold text-gray-900">{displayCandidate.createdAt ? new Date(displayCandidate.createdAt).toLocaleDateString() : '-'}</div>
             </div>
             <div>
               <div className="text-sm text-gray-600">Assessment Result</div>
@@ -168,20 +166,6 @@ export default function RecruiterCandidateDetails({ user, onLogout }: RecruiterC
               <div className="text-sm text-gray-600">Assessment Score</div>
               <div className="text-lg font-semibold text-gray-900">{displaySubmission ? `${displaySubmission.score}%` : '-'}</div>
             </div>
-            {displayInterviewSubmission && (
-              <>
-                <div>
-                  <div className="text-sm text-gray-600">AI Interview Result</div>
-                  <div className={`text-lg font-semibold ${displayInterviewSubmission.result === 'passed' ? 'text-green-600' : 'text-red-600'}`}>
-                    {displayInterviewSubmission.result}
-                  </div>
-                </div>
-                <div>
-                  <div className="text-sm text-gray-600">AI Interview Score</div>
-                  <div className="text-lg font-semibold text-gray-900">{displayInterviewSubmission.score}%</div>
-                </div>
-              </>
-            )}
           </div>
 
           <div className="mt-6">
@@ -227,7 +211,7 @@ export default function RecruiterCandidateDetails({ user, onLogout }: RecruiterC
                       <div className="mt-3 text-sm text-gray-600">
                         <div className="font-semibold text-gray-500 mb-1">Options</div>
                         <ul className="list-disc list-inside space-y-1">
-                          {question.options.map((option) => (
+                          {question.options.map((option: string) => (
                             <li key={option}>
                               {option}
                               {question.correctAnswer === option && (
@@ -244,28 +228,6 @@ export default function RecruiterCandidateDetails({ user, onLogout }: RecruiterC
             </div>
           )}
 
-          {displayInterviewSubmission && (
-            <div className="mt-8">
-              <div className="flex items-center space-x-2 mb-4">
-                <FileText className="w-5 h-5 text-blue-600" />
-                <span className="text-sm font-semibold text-gray-700">AI Interview Responses</span>
-              </div>
-              <div className="space-y-4">
-                {displayInterviewSubmission.questions.map((question, index) => (
-                  <div key={question.id} className="border border-gray-200 rounded-xl p-4">
-                    <div className="text-xs font-semibold text-gray-500 mb-1">Question {index + 1}</div>
-                    <div className="text-gray-900 font-semibold mb-3">{question.question}</div>
-                    <div className="bg-gray-50 rounded-lg p-3">
-                      <div className="text-xs font-semibold text-gray-500 mb-2">Candidate Answer</div>
-                      <div className="text-gray-800 whitespace-pre-wrap">
-                        {interviewAnswers?.[question.id] || 'No answer provided.'}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
         </div>
       </div>
     </div>

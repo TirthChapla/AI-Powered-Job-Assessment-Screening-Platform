@@ -159,7 +159,7 @@ export default function AssessmentDetails({ user, onLogout }: AssessmentDetailsP
                   <FileText className="w-5 h-5 text-blue-600" />
                   <div>
                     <div className="text-sm text-gray-500">Questions</div>
-                    <div className="font-semibold text-gray-900">{assessment.questions}</div>
+                    <div className="font-semibold text-gray-900">—</div>
                   </div>
                 </div>
                 <div className="flex items-center space-x-3 p-4 bg-gray-50 rounded-lg">
@@ -262,7 +262,7 @@ export default function AssessmentDetails({ user, onLogout }: AssessmentDetailsP
                   </div>
 
                   <div className="text-sm text-gray-600">
-                    Applied on {new Date(application.createdAt).toLocaleDateString()}
+                    Applied on {application.createdAt ? new Date(application.createdAt).toLocaleDateString() : '-'}
                   </div>
 
                   {application.resumeFileName && (

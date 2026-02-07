@@ -5,7 +5,9 @@ import ThemeToggle from '../components/ThemeToggle';
 import {
   AssessmentApplication,
   AssessmentListItem,
-  getCandidateDashboard
+  getAssessments,
+  getCandidateApplications,
+  getCandidateAssessmentCompletions
 } from '../data/api';
 
 interface User {
@@ -35,10 +37,14 @@ export default function CandidateDashboard({ user, onLogout }: CandidateDashboar
       try {
         setLoading(true);
         setError('');
-        const response = await getCandidateDashboard(user.id);
-        setAssessments(response.assessments || []);
-        setApplications(response.applications || []);
-        setCompletedIds(response.completedAssessmentIds || []);
+        const [assessmentsResponse, applicationsResponse, completionsResponse] = await Promise.all([
+          getAssessments(),
+          getCandidateApplications(user.id),
+          getCandidateAssessmentCompletions(user.id)
+        ]);
+        setAssessments(assessmentsResponse);
+        setApplications(applicationsResponse);
+        setCompletedIds(completionsResponse.assessmentIds || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load assessments.');
       } finally {

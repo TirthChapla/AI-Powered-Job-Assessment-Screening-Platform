@@ -313,7 +313,7 @@ export default function TakeAssessment({ user, onLogout }: TakeAssessmentProps) 
                 <ChevronLeft className="w-5 h-5" />
                 <span>Previous</span>
               </button>
-              {currentQuestion < mockQuestions.length - 1 ? (
+              {currentQuestion < assessmentQuestions.length - 1 ? (
                 <button
                   onClick={() => setCurrentQuestion(currentQuestion + 1)}
                   className="flex items-center space-x-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-medium transition shadow-md hover:shadow-lg"
@@ -336,7 +336,7 @@ export default function TakeAssessment({ user, onLogout }: TakeAssessmentProps) 
             <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6 sticky top-6">
               <h3 className="font-bold text-gray-900 mb-4">Question Overview</h3>
               <div className="grid grid-cols-5 gap-2">
-                {mockQuestions.map((q, index) => (
+                {assessmentQuestions.map((q, index) => (
                   <button
                     key={index}
                     onClick={() => setCurrentQuestion(index)}
@@ -359,7 +359,7 @@ export default function TakeAssessment({ user, onLogout }: TakeAssessmentProps) 
                 </div>
                 <div className="flex items-center justify-between">
                   <span className="text-gray-600">Remaining</span>
-                  <span className="font-semibold text-orange-600">{mockQuestions.length - Object.keys(answers).length}</span>
+                  <span className="font-semibold text-orange-600">{assessmentQuestions.length - Object.keys(answers).length}</span>
                 </div>
               </div>
             </div>

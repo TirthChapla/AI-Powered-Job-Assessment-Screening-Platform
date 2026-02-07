@@ -97,11 +97,18 @@ export default function Leaderboard({ user, onLogout }: LeaderboardProps) {
   ].sort(sortDesc);
 
   const mergedAll = [...mergedPassed, ...mergedFailed].sort(sortDesc);
+  const leaderboardEntries = useMemo(() => {
+    const byCandidate = new Map<string, (ScoreEntry & { source: 'Assessment' | 'AI Interview' })>();
+    for (const entry of mergedAll) {
+      const key = entry.email || entry.name;
+      const existing = byCandidate.get(key);
+      if (!existing || entry.score > existing.score) {
+        byCandidate.set(key, entry);
+      }
+    }
+    return [...byCandidate.values()].sort(sortDesc);
+  }, [mergedAll]);
 
-  const recentPassed = mergedPassed[0];
-  const lastPassed = mergedPassed.length > 1 ? mergedPassed[mergedPassed.length - 1] : undefined;
-  const recentFailed = mergedFailed[0];
-  const lastFailed = mergedFailed.length > 1 ? mergedFailed[mergedFailed.length - 1] : undefined;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -216,7 +223,7 @@ export default function Leaderboard({ user, onLogout }: LeaderboardProps) {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-200">
-                    {mergedAll.map((entry) => (
+                    {leaderboardEntries.map((entry) => (
                       <tr key={`${entry.candidateId}-${entry.result}`} className="hover:bg-gray-50 transition">
                         <td className="px-6 py-4 font-semibold text-gray-900">{entry.name}</td>
                         <td className="px-6 py-4 text-gray-600">{entry.email}</td>
@@ -242,7 +249,7 @@ export default function Leaderboard({ user, onLogout }: LeaderboardProps) {
                         </td>
                       </tr>
                     ))}
-                    {mergedAll.length === 0 && (
+                    {leaderboardEntries.length === 0 && (
                       <tr>
                         <td colSpan={6} className="px-6 py-6 text-center text-sm text-gray-500">
                           No leaderboard data yet.

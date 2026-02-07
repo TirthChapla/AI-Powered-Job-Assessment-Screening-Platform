@@ -676,7 +676,7 @@ export default function RecruiterAssessmentDetails({ user, onLogout }: Recruiter
                               </span>
                             </td>
                             <td className="px-4 py-3 text-gray-600">{submission.score}%</td>
-                            <td className="px-4 py-3 text-gray-600">{new Date(submission.submittedAt).toLocaleDateString()}</td>
+                            <td className="px-4 py-3 text-gray-600">{submission.submittedAt ? new Date(submission.submittedAt).toLocaleDateString() : '-'}</td>
                           </tr>
                         ))}
                       </tbody>
