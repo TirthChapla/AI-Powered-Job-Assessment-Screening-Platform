@@ -1,0 +1,9 @@
+{
+  "name": "Python Monorepo",
+  "dockerComposeFile": "docker-compose.yml",
+  "service": "platform-agent",
+  "workspaceFolder": "/workspace",
+  "settings": {},
+  "extensions": ["ms-python.python"],
+  "overrideCommand": true
+}

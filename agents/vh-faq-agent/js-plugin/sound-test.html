@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VH FAQ Plugin - Sound Notification Test</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background: #f8fafc;
+      }
+      .container {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #1e293b;
+        margin-bottom: 10px;
+      }
+      .description {
+        color: #64748b;
+        margin-bottom: 30px;
+        line-height: 1.6;
+      }
+      .test-section {
+        margin: 30px 0;
+        padding: 20px;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        background: #f8fafc;
+      }
+      .test-section h3 {
+        margin-top: 0;
+        color: #334155;
+      }
+      .btn {
+        background: #6366f1;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        margin: 5px;
+        transition: all 0.2s;
+      }
+      .btn:hover {
+        background: #4f46e5;
+        transform: translateY(-1px);
+      }
+      .btn-secondary {
+        background: #64748b;
+      }
+      .btn-secondary:hover {
+        background: #475569;
+      }
+      .btn-success {
+        background: #10b981;
+      }
+      .btn-success:hover {
+        background: #059669;
+      }
+      .btn-danger {
+        background: #ef4444;
+      }
+      .btn-danger:hover {
+        background: #dc2626;
+      }
+      .status {
+        margin-top: 15px;
+        padding: 10px;
+        border-radius: 6px;
+        font-weight: 500;
+        background: #e0e7ff;
+        color: #3730a3;
+      }
+      .config-section {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin: 20px 0;
+      }
+      .config-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+      }
+      .config-item label {
+        font-weight: 600;
+        color: #374151;
+      }
+      .config-item input,
+      .config-item select {
+        padding: 8px 12px;
+        border: 1px solid #d1d5db;
+        border-radius: 6px;
+        font-size: 14px;
+      }
+      .warning {
+        background: #fef3c7;
+        color: #92400e;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #f59e0b;
+      }
+      .info {
+        background: #dbeafe;
+        color: #1e40af;
+        padding: 15px;
+        border-radius: 8px;
+        margin: 20px 0;
+        border-left: 4px solid #3b82f6;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>VH FAQ Plugin - Sound Notification Test</h1>
+      <p class="description">
+        Test the gentle notification sound that plays when incoming call
+        notifications appear. The sound now repeats every 5 seconds
+        (configurable) while the notification is visible to ensure users notice
+        it.
+      </p>
+
+      <div class="info">
+        <strong>Sound Features:</strong>
+        <ul>
+          <li>Gentle, non-intrusive tone (800Hz + 600Hz harmonics)</li>
+          <li>Short duration (0.8 seconds by default)</li>
+          <li>Low volume (20% by default)</li>
+          <li>Repeats every 5 seconds while notification is visible</li>
+          <li>Respects system volume settings</li>
+          <li>Automatically stops when notification is dismissed</li>
+          <li>Gracefully handles audio permission issues</li>
+        </ul>
+      </div>
+
+      <div class="test-section">
+        <h3>Sound Configuration</h3>
+        <div class="config-section">
+          <div class="config-item">
+            <label for="sound-enabled">Enable Sound</label>
+            <select id="sound-enabled">
+              <option value="true">Enabled</option>
+              <option value="false">Disabled</option>
+            </select>
+          </div>
+          <div class="config-item">
+            <label for="sound-volume">Volume (0.0 - 1.0)</label>
+            <input
+              type="number"
+              id="sound-volume"
+              min="0"
+              max="1"
+              step="0.1"
+              value="0.2" />
+          </div>
+          <div class="config-item">
+            <label for="respect-system">Respect System Volume</label>
+            <select id="respect-system">
+              <option value="true">Yes</option>
+              <option value="false">No</option>
+            </select>
+          </div>
+          <div class="config-item">
+            <label for="max-duration">Max Duration (ms)</label>
+            <input
+              type="number"
+              id="max-duration"
+              min="500"
+              max="5000"
+              step="100"
+              value="2000" />
+          </div>
+          <div class="config-item">
+            <label for="repeat-interval">Repeat Interval (ms)</label>
+            <input
+              type="number"
+              id="repeat-interval"
+              min="1000"
+              max="30000"
+              step="1000"
+              value="5000" />
+          </div>
+        </div>
+      </div>
+
+      <div class="test-section">
+        <h3>Sound Tests</h3>
+        <button class="btn" onclick="testSingleSound()">
+          Test Single Sound
+        </button>
+        <button class="btn" onclick="testRepeatingSound()">
+          Test Repeating Sound
+        </button>
+        <button class="btn btn-secondary" onclick="stopSound()">
+          Stop All Sounds
+        </button>
+        <div class="status" id="sound-status">Ready to test sound</div>
+      </div>
+
+      <div class="test-section">
+        <h3>Widget with Repeating Sound</h3>
+        <p>
+          Test the complete widget experience with repeating sound
+          notifications. The widget will show an incoming call notification that
+          plays a sound every 5 seconds until dismissed.
+        </p>
+        <button class="btn btn-success" onclick="testWidgetWithSound()">
+          Test Widget with Repeating Sound
+        </button>
+        <button class="btn btn-danger" onclick="destroyWidget()">
+          Destroy Widget
+        </button>
+        <div class="status" id="widget-status">Ready to test widget</div>
+      </div>
+
+      <div class="warning">
+        <strong>Note:</strong> Sound may not play in some browsers if there
+        hasn't been user interaction with the page first. This is a browser
+        security feature. Click any button first to enable audio.
+      </div>
+    </div>
+
+    <script type="module">
+      import { FAQWidget, SoundManager } from "./dist/vh-faq-plugin.es.js";
+
+      let currentWidget = null;
+
+      function getSoundConfig() {
+        return {
+          enabled: document.getElementById("sound-enabled").value === "true",
+          volume: parseFloat(document.getElementById("sound-volume").value),
+          respectSystemVolume:
+            document.getElementById("respect-system").value === "true",
+          maxDurationMs: parseInt(
+            document.getElementById("max-duration").value
+          ),
+          repeatIntervalMs: parseInt(
+            document.getElementById("repeat-interval").value
+          ),
+        };
+      }
+
+      function updateStatus(elementId, message) {
+        document.getElementById(elementId).textContent = message;
+      }
+
+      window.testSingleSound = async function () {
+        updateStatus("sound-status", "Playing single notification sound...");
+
+        try {
+          const config = getSoundConfig();
+          const success = await SoundManager.testSound(config);
+
+          if (success) {
+            updateStatus(
+              "sound-status",
+              "✅ Single sound played successfully!"
+            );
+          } else {
+            updateStatus("sound-status", "❌ Single sound test failed");
+          }
+        } catch (error) {
+          updateStatus("sound-status", `❌ Error: ${error.message}`);
+        }
+      };
+
+      window.testRepeatingSound = function () {
+        updateStatus(
+          "sound-status",
+          "Starting repeating notification sound..."
+        );
+
+        try {
+          const config = getSoundConfig();
+          SoundManager.startRepeatingNotification(config);
+          updateStatus(
+            "sound-status",
+            `🔄 Repeating sound started! Playing every ${
+              config.repeatIntervalMs / 1000
+            } seconds. Click "Stop All Sounds" to stop.`
+          );
+        } catch (error) {
+          updateStatus("sound-status", `❌ Error: ${error.message}`);
+        }
+      };
+
+      window.stopSound = function () {
+        SoundManager.stopRepeatingNotification();
+        updateStatus("sound-status", "🔇 All sounds stopped");
+      };
+
+      window.testWidgetWithSound = async function () {
+        destroyWidget();
+        updateStatus(
+          "widget-status",
+          "Creating widget with repeating sound..."
+        );
+
+        const soundConfig = getSoundConfig();
+
+        currentWidget = new FAQWidget({
+          agentName: "Sound Test Agent",
+          position: "bottom-right",
+          autoIncomingCall: {
+            enabled: true,
+            developerMode: true,
+            delayMs: 2000,
+            sound: soundConfig,
+          },
+        });
+
+        try {
+          await currentWidget.initialize({
+            livekitUrl: "wss://my-test-app-7nxxb6id.livekit.cloud",
+            tokenApiUrl: "https://quinn.anandchapla.com/api/quinn/token",
+            participantName: "Sound Test User",
+          });
+
+          updateStatus(
+            "widget-status",
+            `✅ Widget created! Incoming call with repeating sound (every ${
+              soundConfig.repeatIntervalMs / 1000
+            }s) will appear in 2 seconds.`
+          );
+        } catch (error) {
+          updateStatus("widget-status", `❌ Error: ${error.message}`);
+        }
+      };
+
+      window.destroyWidget = function () {
+        if (currentWidget) {
+          currentWidget.destroy();
+          currentWidget = null;
+          updateStatus("widget-status", "Widget destroyed");
+        }
+      };
+
+      // Cleanup on page unload
+      window.addEventListener("beforeunload", () => {
+        destroyWidget();
+        SoundManager.cleanup();
+      });
+    </script>
+  </body>
+</html>

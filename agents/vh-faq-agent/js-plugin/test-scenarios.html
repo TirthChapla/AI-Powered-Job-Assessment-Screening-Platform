@@ -1,0 +1,603 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VH FAQ Plugin - Test Scenarios</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: #0f172a;
+        color: #e2e8f0;
+        line-height: 1.6;
+      }
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+      }
+      .scenario {
+        background: #1e293b;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        padding: 20px;
+        margin-bottom: 20px;
+      }
+      .scenario h3 {
+        color: #60a5fa;
+        margin-top: 0;
+      }
+      .scenario-controls {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-top: 15px;
+      }
+      .btn {
+        background: #3b82f6;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 6px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: background 0.2s;
+      }
+      .btn:hover {
+        background: #2563eb;
+      }
+      .btn-danger {
+        background: #dc2626;
+      }
+      .btn-danger:hover {
+        background: #b91c1c;
+      }
+      .btn-success {
+        background: #059669;
+      }
+      .btn-success:hover {
+        background: #047857;
+      }
+      .status {
+        background: #374151;
+        padding: 10px;
+        border-radius: 6px;
+        margin-top: 10px;
+        font-family: monospace;
+        font-size: 12px;
+      }
+      .code {
+        background: #111827;
+        padding: 15px;
+        border-radius: 6px;
+        font-family: monospace;
+        font-size: 12px;
+        overflow-x: auto;
+        margin: 10px 0;
+      }
+      .warning {
+        background: #fbbf24;
+        color: #92400e;
+        padding: 10px;
+        border-radius: 6px;
+        margin: 10px 0;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>VH FAQ Plugin - Smart Notification Test Scenarios</h1>
+
+      <div class="warning">
+        <strong>Note:</strong> Open browser console to see detailed logging of
+        notification decisions.
+      </div>
+
+      <div class="scenario">
+        <h3>Scenario 1: Developer Mode (Always Show)</h3>
+        <p>
+          In developer mode, notifications always show regardless of user
+          history. Perfect for testing.
+        </p>
+        <div class="code">
+          const widget = new FAQWidget({ autoIncomingCall: { enabled: true,
+          developerMode: true, delayMs: 2000 } });
+        </div>
+        <div class="scenario-controls">
+          <button class="btn" onclick="testDeveloperMode()">
+            Test Developer Mode
+          </button>
+          <button class="btn btn-danger" onclick="destroyWidget()">
+            Destroy Widget
+          </button>
+        </div>
+        <div class="status" id="dev-status">Ready to test</div>
+      </div>
+
+      <div class="scenario">
+        <h3>Scenario 2: Production Mode (Smart Notifications)</h3>
+        <p>
+          Smart notifications that respect user choices and implement cooldowns.
+        </p>
+        <div class="code">
+          const widget = new FAQWidget({ autoIncomingCall: { enabled: true,
+          developerMode: false, respectUserChoice: true, cooldownMs: 10000, //
+          10 seconds for testing maxNotificationsPerSession: 2 } });
+        </div>
+        <div class="scenario-controls">
+          <button class="btn" onclick="testProductionMode()">
+            Test Production Mode
+          </button>
+          <button class="btn btn-success" onclick="resetAndTestProduction()">
+            Reset & Test Production
+          </button>
+          <button class="btn btn-danger" onclick="destroyWidget()">
+            Destroy Widget
+          </button>
+        </div>
+        <div class="status" id="prod-status">Ready to test</div>
+      </div>
+
+      <div class="scenario">
+        <h3>Scenario 3: Conservative Mode (Minimal Interruption)</h3>
+        <p>
+          Very conservative approach - only one notification per session, long
+          cooldowns.
+        </p>
+        <div class="code">
+          const widget = new FAQWidget({ autoIncomingCall: { enabled: true,
+          respectUserChoice: true, cooldownMs: 15000, // 15 seconds for testing
+          maxNotificationsPerSession: 1, resetAfterDays: 30 } });
+        </div>
+        <div class="scenario-controls">
+          <button class="btn" onclick="testConservativeMode()">
+            Test Conservative Mode
+          </button>
+          <button class="btn btn-danger" onclick="destroyWidget()">
+            Destroy Widget
+          </button>
+        </div>
+        <div class="status" id="conservative-status">Ready to test</div>
+      </div>
+
+      <div class="scenario">
+        <h3>Scenario 4: Aggressive Mode (High Priority)</h3>
+        <p>
+          More aggressive notifications that don't respect user decline choices.
+        </p>
+        <div class="code">
+          const widget = new FAQWidget({ autoIncomingCall: { enabled: true,
+          respectUserChoice: false, cooldownMs: 5000, // 5 seconds for testing
+          maxNotificationsPerSession: 3, resetAfterDays: 1 } });
+        </div>
+        <div class="scenario-controls">
+          <button class="btn" onclick="testAggressiveMode()">
+            Test Aggressive Mode
+          </button>
+          <button class="btn btn-success" onclick="resetAndTestAggressive()">
+            Reset & Test Aggressive
+          </button>
+          <button class="btn btn-danger" onclick="destroyWidget()">
+            Destroy Widget
+          </button>
+        </div>
+        <div class="status" id="aggressive-status">Ready to test</div>
+      </div>
+
+      <div class="scenario">
+        <h3>User Data Management</h3>
+        <p>Manage user interaction data for testing different scenarios.</p>
+        <div class="scenario-controls">
+          <button class="btn btn-success" onclick="showUserStats()">
+            Show User Stats
+          </button>
+          <button class="btn btn-danger" onclick="resetUserData()">
+            Reset User Data
+          </button>
+          <button class="btn" onclick="simulateUserAccept()">
+            Simulate User Accept
+          </button>
+          <button class="btn" onclick="simulateUserDecline()">
+            Simulate User Decline
+          </button>
+        </div>
+        <div class="status" id="data-status">Ready</div>
+      </div>
+
+      <div class="scenario">
+        <h3>Navigation Simulation</h3>
+        <p>
+          Simulate page navigation to test how notifications behave across page
+          loads.
+        </p>
+        <div class="scenario-controls">
+          <button class="btn" onclick="simulateNavigation()">
+            Simulate Page Navigation
+          </button>
+          <button class="btn" onclick="simulateMultipleNavigations()">
+            Simulate Multiple Navigations
+          </button>
+        </div>
+        <div class="status" id="nav-status">Ready</div>
+      </div>
+    </div>
+
+    <script type="module">
+      import {
+        FAQWidget,
+        UserInteractionTracker,
+      } from "./dist/vh-faq-plugin.es.js";
+
+      let currentWidget = null;
+
+      // Make functions global for onclick handlers
+      window.testDeveloperMode = async function () {
+        destroyWidget();
+        updateStatus("dev-status", "Creating widget with developer mode...");
+
+        currentWidget = new FAQWidget({
+          agentName: "Dev Test Agent",
+          position: "bottom-right",
+          autoIncomingCall: {
+            enabled: true,
+            developerMode: true,
+            delayMs: 2000,
+          },
+        });
+
+        try {
+          await currentWidget.initialize({
+            livekitUrl: "wss://my-test-app-7nxxb6id.livekit.cloud",
+            tokenApiUrl: "https://quinn.anandchapla.com/api/quinn/token",
+            participantName: "Dev User",
+          });
+          updateStatus(
+            "dev-status",
+            "Widget created! Notification should appear in 2 seconds regardless of history."
+          );
+        } catch (error) {
+          updateStatus("dev-status", `Error: ${error.message}`);
+        }
+      };
+
+      window.testProductionMode = async function () {
+        destroyWidget();
+        updateStatus("prod-status", "Creating widget with production mode...");
+
+        // Show current user stats before testing
+        const currentStats = UserInteractionTracker.getUserStats();
+        console.log("Current user stats before production test:", currentStats);
+
+        // Check if user data might prevent notification
+        if (currentStats.userAccepted) {
+          updateStatus(
+            "prod-status",
+            "⚠️ User previously accepted - notification will be suppressed. Click 'Reset User Data' first!"
+          );
+          return;
+        }
+        if (currentStats.userDeclined) {
+          updateStatus(
+            "prod-status",
+            "⚠️ User previously declined - notification will be suppressed. Click 'Reset User Data' first!"
+          );
+          return;
+        }
+        if (currentStats.notificationCount >= 2) {
+          updateStatus(
+            "prod-status",
+            "⚠️ Session limit reached - notification will be suppressed. Click 'Reset User Data' first!"
+          );
+          return;
+        }
+
+        const now = Date.now();
+        const cooldownMs = 10000;
+        if (now - currentStats.lastNotificationShown < cooldownMs) {
+          const remainingMs =
+            cooldownMs - (now - currentStats.lastNotificationShown);
+          updateStatus(
+            "prod-status",
+            `⚠️ Cooldown active - ${Math.round(
+              remainingMs / 1000
+            )} seconds remaining`
+          );
+          return;
+        }
+
+        currentWidget = new FAQWidget({
+          agentName: "Production Agent",
+          position: "bottom-right",
+          autoIncomingCall: {
+            enabled: true,
+            developerMode: false,
+            respectUserChoice: true,
+            cooldownMs: 10000, // 10 seconds for testing
+            maxNotificationsPerSession: 2,
+            delayMs: 2000,
+          },
+        });
+
+        try {
+          await currentWidget.initialize({
+            livekitUrl: "wss://my-test-app-7nxxb6id.livekit.cloud",
+            tokenApiUrl: "https://quinn.anandchapla.com/api/quinn/token",
+            participantName: "Prod User",
+          });
+          updateStatus(
+            "prod-status",
+            "✅ Widget created! Notification should appear in 2 seconds. Check console for details."
+          );
+        } catch (error) {
+          updateStatus("prod-status", `Error: ${error.message}`);
+        }
+      };
+
+      window.testConservativeMode = async function () {
+        destroyWidget();
+        updateStatus(
+          "conservative-status",
+          "Creating widget with conservative mode..."
+        );
+
+        currentWidget = new FAQWidget({
+          agentName: "Conservative Agent",
+          position: "bottom-right",
+          autoIncomingCall: {
+            enabled: true,
+            respectUserChoice: true,
+            cooldownMs: 15000, // 15 seconds for testing
+            maxNotificationsPerSession: 1,
+            resetAfterDays: 30,
+            delayMs: 2000,
+          },
+        });
+
+        try {
+          await currentWidget.initialize({
+            livekitUrl: "wss://my-test-app-7nxxb6id.livekit.cloud",
+            tokenApiUrl: "https://quinn.anandchapla.com/api/quinn/token",
+            participantName: "Conservative User",
+          });
+          updateStatus(
+            "conservative-status",
+            "Widget created! Very conservative notification logic active."
+          );
+        } catch (error) {
+          updateStatus("conservative-status", `Error: ${error.message}`);
+        }
+      };
+
+      window.testAggressiveMode = async function () {
+        destroyWidget();
+        updateStatus(
+          "aggressive-status",
+          "Creating widget with aggressive mode..."
+        );
+
+        // Show current user stats before testing
+        const currentStats = UserInteractionTracker.getUserStats();
+        console.log("Current user stats before aggressive test:", currentStats);
+
+        // Check only for session limits and cooldowns (aggressive mode ignores user choices)
+        if (currentStats.notificationCount >= 3) {
+          updateStatus(
+            "aggressive-status",
+            "⚠️ Session limit reached (3/3) - notification will be suppressed. Click 'Reset User Data' first!"
+          );
+          return;
+        }
+
+        const now = Date.now();
+        const cooldownMs = 5000;
+        if (now - currentStats.lastNotificationShown < cooldownMs) {
+          const remainingMs =
+            cooldownMs - (now - currentStats.lastNotificationShown);
+          updateStatus(
+            "aggressive-status",
+            `⚠️ Cooldown active - ${Math.round(
+              remainingMs / 1000
+            )} seconds remaining`
+          );
+          return;
+        }
+
+        // Show what aggressive mode will ignore
+        if (currentStats.userDeclined || currentStats.userAccepted) {
+          updateStatus(
+            "aggressive-status",
+            `🚀 Aggressive mode will ignore previous user choice (declined: ${currentStats.userDeclined}, accepted: ${currentStats.userAccepted})`
+          );
+        }
+
+        currentWidget = new FAQWidget({
+          agentName: "Aggressive Agent",
+          position: "bottom-right",
+          autoIncomingCall: {
+            enabled: true,
+            respectUserChoice: false,
+            cooldownMs: 5000, // 5 seconds for testing
+            maxNotificationsPerSession: 3,
+            resetAfterDays: 1,
+            delayMs: 2000,
+          },
+        });
+
+        try {
+          await currentWidget.initialize({
+            livekitUrl: "wss://my-test-app-7nxxb6id.livekit.cloud",
+            tokenApiUrl: "https://quinn.anandchapla.com/api/quinn/token",
+            participantName: "Aggressive User",
+          });
+          updateStatus(
+            "aggressive-status",
+            "✅ Aggressive mode active! Should show notification in 2 seconds regardless of previous user choices."
+          );
+        } catch (error) {
+          updateStatus("aggressive-status", `Error: ${error.message}`);
+        }
+      };
+
+      window.resetAndTestProduction = async function () {
+        // Reset user data first
+        UserInteractionTracker.resetUserData();
+        updateStatus(
+          "prod-status",
+          "User data reset. Testing production mode..."
+        );
+
+        // Wait a moment then test production mode
+        setTimeout(() => {
+          window.testProductionMode();
+        }, 500);
+      };
+
+      window.resetAndTestAggressive = async function () {
+        // Reset user data first
+        UserInteractionTracker.resetUserData();
+        updateStatus(
+          "aggressive-status",
+          "User data reset. Testing aggressive mode..."
+        );
+
+        // Wait a moment then test aggressive mode
+        setTimeout(() => {
+          window.testAggressiveMode();
+        }, 500);
+      };
+
+      window.destroyWidget = function () {
+        if (currentWidget) {
+          currentWidget.destroy();
+          currentWidget = null;
+          updateAllStatus("Widget destroyed");
+        }
+      };
+
+      window.showUserStats = function () {
+        const stats = UserInteractionTracker.getUserStats();
+        const formatted = JSON.stringify(stats, null, 2);
+        updateStatus("data-status", `User Stats:\n${formatted}`);
+        console.log("User Interaction Stats:", stats);
+      };
+
+      window.resetUserData = function () {
+        UserInteractionTracker.resetUserData();
+        updateStatus(
+          "data-status",
+          "User data reset! Next widget will treat user as new."
+        );
+      };
+
+      window.simulateUserAccept = function () {
+        UserInteractionTracker.recordUserAccepted();
+        updateStatus(
+          "data-status",
+          "Simulated user accept. Future notifications will be suppressed."
+        );
+      };
+
+      window.simulateUserDecline = function () {
+        UserInteractionTracker.recordUserDeclined();
+        updateStatus(
+          "data-status",
+          "Simulated user decline. Future notifications may be suppressed."
+        );
+      };
+
+      window.simulateNavigation = function () {
+        updateStatus("nav-status", "Simulating page navigation...");
+        // Destroy and recreate widget to simulate navigation
+        const currentConfig = getCurrentWidgetConfig();
+        destroyWidget();
+        setTimeout(() => {
+          recreateWidget(currentConfig);
+          updateStatus(
+            "nav-status",
+            "Navigation simulated! Check if notification appears."
+          );
+        }, 1000);
+      };
+
+      window.simulateMultipleNavigations = function () {
+        updateStatus("nav-status", "Simulating multiple navigations...");
+        const currentConfig = getCurrentWidgetConfig();
+        let count = 0;
+
+        const navigate = () => {
+          count++;
+          destroyWidget();
+          setTimeout(() => {
+            recreateWidget(currentConfig);
+            updateStatus("nav-status", `Navigation ${count}/3 completed`);
+            if (count < 3) {
+              setTimeout(navigate, 3000);
+            } else {
+              updateStatus(
+                "nav-status",
+                "Multiple navigations completed! Check console for behavior."
+              );
+            }
+          }, 1000);
+        };
+
+        navigate();
+      };
+
+      function getCurrentWidgetConfig() {
+        // Return a default production config for navigation simulation
+        return {
+          agentName: "Navigation Test Agent",
+          position: "bottom-right",
+          autoIncomingCall: {
+            enabled: true,
+            developerMode: false,
+            respectUserChoice: true,
+            cooldownMs: 5000,
+            maxNotificationsPerSession: 2,
+            delayMs: 2000,
+          },
+        };
+      }
+
+      async function recreateWidget(config) {
+        currentWidget = new FAQWidget(config);
+        try {
+          await currentWidget.initialize({
+            livekitUrl: "wss://my-test-app-7nxxb6id.livekit.cloud",
+            tokenApiUrl: "https://quinn.anandchapla.com/api/quinn/token",
+            participantName: "Navigation User",
+          });
+        } catch (error) {
+          console.warn("Widget recreation failed:", error);
+        }
+      }
+
+      function updateStatus(elementId, message) {
+        const element = document.getElementById(elementId);
+        if (element) {
+          element.textContent = message;
+        }
+      }
+
+      function updateAllStatus(message) {
+        [
+          "dev-status",
+          "prod-status",
+          "conservative-status",
+          "aggressive-status",
+        ].forEach((id) => {
+          updateStatus(id, message);
+        });
+      }
+
+      // Initial setup
+      console.log("VH FAQ Plugin Test Scenarios Loaded");
+      console.log(
+        "Open browser console to see detailed notification decision logging"
+      );
+    </script>
+  </body>
+</html>

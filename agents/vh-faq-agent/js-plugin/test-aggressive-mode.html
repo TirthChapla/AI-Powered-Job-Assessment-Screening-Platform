@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aggressive Mode Test</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 20px;
+        background: #f0f0f0;
+      }
+      .test-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        max-width: 600px;
+        margin: 0 auto;
+      }
+      .btn {
+        background: #007bff;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 5px;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      .btn:hover {
+        background: #0056b3;
+      }
+      .btn-danger {
+        background: #dc3545;
+      }
+      .btn-success {
+        background: #28a745;
+      }
+      .status {
+        background: #f8f9fa;
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+        font-family: monospace;
+      }
+      .step {
+        background: #e9ecef;
+        padding: 15px;
+        margin: 10px 0;
+        border-radius: 4px;
+        border-left: 4px solid #007bff;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>🚀 Aggressive Mode Test</h1>
+      <p>
+        This test demonstrates that aggressive mode (<code
+          >respectUserChoice: false</code
+        >) correctly ignores previous user choices.
+      </p>
+
+      <div class="step">
+        <h3>Step 1: Simulate User Decline</h3>
+        <p>
+          First, we'll simulate that the user previously declined a
+          notification.
+        </p>
+        <button class="btn" onclick="simulateDecline()">
+          Simulate User Decline
+        </button>
+        <div class="status" id="decline-status">Ready</div>
+      </div>
+
+      <div class="step">
+        <h3>Step 2: Test Production Mode (Should Respect Choice)</h3>
+        <p>
+          Production mode with <code>respectUserChoice: true</code> should NOT
+          show notification.
+        </p>
+        <button class="btn" onclick="testProductionMode()">
+          Test Production Mode
+        </button>
+        <div class="status" id="production-status">Ready</div>
+      </div>
+
+      <div class="step">
+        <h3>Step 3: Test Aggressive Mode (Should Ignore Choice)</h3>
+        <p>
+          Aggressive mode with <code>respectUserChoice: false</code> should show
+          notification despite previous decline.
+        </p>
+        <button class="btn btn-success" onclick="testAggressiveMode()">
+          Test Aggressive Mode
+        </button>
+        <div class="status" id="aggressive-status">Ready</div>
+      </div>
+
+      <div class="step">
+        <h3>Step 4: Reset for Next Test</h3>
+        <button class="btn btn-danger" onclick="resetData()">
+          Reset User Data
+        </button>
+        <button class="btn btn-danger" onclick="destroyWidget()">
+          Destroy Widget
+        </button>
+        <div class="status" id="reset-status">Ready</div>
+      </div>
+
+      <div
+        style="
+          background: #fff3cd;
+          padding: 15px;
+          border-radius: 4px;
+          margin-top: 20px;
+        ">
+        <strong>📝 Instructions:</strong>
+        <ol>
+          <li>Open browser console (F12) to see detailed logs</li>
+          <li>Follow steps 1-3 in order</li>
+          <li>Watch for notification behavior and console messages</li>
+          <li>
+            Expected: Production mode respects decline, Aggressive mode ignores
+            it
+          </li>
+        </ol>
+      </div>
+    </div>
+
+    <script type="module">
+      import {
+        FAQWidget,
+        UserInteractionTracker,
+      } from "./dist/vh-faq-plugin.es.js";
+
+      let currentWidget = null;
+
+      window.simulateDecline = function () {
+        UserInteractionTracker.recordUserDeclined();
+        const stats = UserInteractionTracker.getUserStats();
+        document.getElementById(
+          "decline-status"
+        ).textContent = `✅ User decline simulated. userDeclined: ${stats.userDeclined}`;
+        console.log("User decline simulated:", stats);
+      };
+
+      window.testProductionMode = async function () {
+        destroyWidget();
+        document.getElementById("production-status").textContent =
+          "Creating production mode widget...";
+
+        const stats = UserInteractionTracker.getUserStats();
+        console.log("Testing production mode with stats:", stats);
+
+        currentWidget = new FAQWidget({
+          agentName: "Production Test",
+          position: "bottom-right",
+          autoIncomingCall: {
+            enabled: true,
+            developerMode: false,
+            respectUserChoice: true, // Should respect user decline
+            cooldownMs: 1000,
+            maxNotificationsPerSession: 5,
+            delayMs: 2000,
+          },
+        });
+
+        try {
+          await currentWidget.initialize({
+            livekitUrl: "wss://my-test-app-7nxxb6id.livekit.cloud",
+            tokenApiUrl: "https://quinn.anandchapla.com/api/quinn/token",
+            participantName: "Production User",
+          });
+
+          document.getElementById("production-status").textContent =
+            "✅ Production mode active. Should NOT show notification (respecting user decline).";
+        } catch (error) {
+          document.getElementById(
+            "production-status"
+          ).textContent = `Error: ${error.message}`;
+        }
+      };
+
+      window.testAggressiveMode = async function () {
+        destroyWidget();
+        document.getElementById("aggressive-status").textContent =
+          "Creating aggressive mode widget...";
+
+        const stats = UserInteractionTracker.getUserStats();
+        console.log("Testing aggressive mode with stats:", stats);
+
+        currentWidget = new FAQWidget({
+          agentName: "Aggressive Test",
+          position: "bottom-right",
+          autoIncomingCall: {
+            enabled: true,
+            developerMode: false,
+            respectUserChoice: false, // Should ignore user decline
+            cooldownMs: 1000,
+            maxNotificationsPerSession: 5,
+            delayMs: 2000,
+          },
+        });
+
+        try {
+          await currentWidget.initialize({
+            livekitUrl: "wss://my-test-app-7nxxb6id.livekit.cloud",
+            tokenApiUrl: "https://quinn.anandchapla.com/api/quinn/token",
+            participantName: "Aggressive User",
+          });
+
+          document.getElementById("aggressive-status").textContent =
+            "🚀 Aggressive mode active. Should show notification in 2 seconds (ignoring user decline)!";
+        } catch (error) {
+          document.getElementById(
+            "aggressive-status"
+          ).textContent = `Error: ${error.message}`;
+        }
+      };
+
+      window.resetData = function () {
+        UserInteractionTracker.resetUserData();
+        document.getElementById("reset-status").textContent =
+          "✅ User data reset. Ready for next test.";
+        document.getElementById("decline-status").textContent = "Ready";
+        document.getElementById("production-status").textContent = "Ready";
+        document.getElementById("aggressive-status").textContent = "Ready";
+      };
+
+      window.destroyWidget = function () {
+        if (currentWidget) {
+          currentWidget.destroy();
+          currentWidget = null;
+        }
+      };
+
+      console.log("🚀 Aggressive Mode Test Loaded");
+      console.log("Follow the steps and watch console for detailed logging");
+    </script>
+  </body>
+</html>

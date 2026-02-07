@@ -22,6 +22,91 @@ interface CandidateDashboardProps {
   onLogout: () => void;
 }
 
+const useMockData = true;
+
+const mockAssessments: AssessmentListItem[] = [
+  {
+    id: 'assess-201',
+    title: 'AI Screening: Frontend Engineer',
+    role: 'Frontend Engineer',
+    company: 'HireIQ Labs',
+    status: 'active',
+    duration: 90,
+    questions: 28,
+    includeInterview: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'assess-202',
+    title: 'AI Screening: Backend Engineer',
+    role: 'Backend Engineer',
+    company: 'DataForge Systems',
+    status: 'active',
+    duration: 80,
+    questions: 25,
+    includeInterview: true,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'assess-203',
+    title: 'AI Screening: Full Stack Developer',
+    role: 'Full Stack Developer',
+    company: 'Nimbus Tech',
+    status: 'active',
+    duration: 100,
+    questions: 32,
+    includeInterview: true,
+    createdAt: new Date().toISOString()
+  }
+];
+
+const mockApplications: AssessmentApplication[] = [
+  {
+    id: 'app-201',
+    assessmentId: 'assess-201',
+    candidateId: 'cand-201',
+    name: 'Aanya Sharma',
+    email: 'aanya.sharma@example.com',
+    experienceYears: 3,
+    skills: ['React', 'TypeScript', 'Testing'],
+    resumeSummary: 'Built component libraries and led UI performance initiatives.',
+    resumeFileName: 'aanya_sharma_resume.pdf',
+    status: 'shortlisted',
+    score: 92,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'app-202',
+    assessmentId: 'assess-202',
+    candidateId: 'cand-202',
+    name: 'Rohit Verma',
+    email: 'rohit.verma@example.com',
+    experienceYears: 4,
+    skills: ['Spring Boot', 'SQL', 'REST APIs'],
+    resumeSummary: 'Delivered high-availability services with strong API design focus.',
+    resumeFileName: 'rohit_verma_resume.pdf',
+    status: 'shortlisted',
+    score: 88,
+    createdAt: new Date().toISOString()
+  },
+  {
+    id: 'app-203',
+    assessmentId: 'assess-203',
+    candidateId: 'cand-203',
+    name: 'Meera Iyer',
+    email: 'meera.iyer@example.com',
+    experienceYears: 2,
+    skills: ['React', 'Node.js', 'PostgreSQL'],
+    resumeSummary: 'Full-stack delivery with emphasis on UX and clean APIs.',
+    resumeFileName: 'meera_iyer_resume.pdf',
+    status: 'shortlisted',
+    score: 85,
+    createdAt: new Date().toISOString()
+  }
+];
+
+const mockCompletedIds = ['assess-201', 'assess-202', 'assess-203'];
+
 export default function CandidateDashboard({ user, onLogout }: CandidateDashboardProps) {
   const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState('');
@@ -37,6 +122,12 @@ export default function CandidateDashboard({ user, onLogout }: CandidateDashboar
       try {
         setLoading(true);
         setError('');
+        if (useMockData) {
+          setAssessments(mockAssessments);
+          setApplications(mockApplications);
+          setCompletedIds(mockCompletedIds);
+          return;
+        }
         const [assessmentsResponse, applicationsResponse, completionsResponse] = await Promise.all([
           getAssessments(),
           getCandidateApplications(user.id),

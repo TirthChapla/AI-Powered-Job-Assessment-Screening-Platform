@@ -22,6 +22,74 @@ interface AssessmentDetailsProps {
   onLogout: () => void;
 }
 
+type ShortlistedCandidate = {
+  id: string;
+  name: string;
+  email: string;
+  score: number;
+  status: 'shortlisted' | 'pending' | 'rejected';
+  interviewSlot: string;
+  skills: string[];
+  resumeScore: number;
+  aiSummary: string;
+  notes: string;
+};
+
+const useMockData = true;
+
+const mockAssessment: AssessmentDetailsType = {
+  id: 'assess-101',
+  title: 'AI Screening: Frontend Engineer',
+  company: 'HireIQ Labs',
+  role: 'Frontend Engineer',
+  status: 'active',
+  duration: 90,
+  createdAt: new Date().toISOString(),
+  requiredSkills: ['React', 'TypeScript', 'UX Systems', 'API Integration', 'Testing'],
+  minExperience: 2,
+  minMatchScore: 75,
+  includeInterview: true
+};
+
+const mockShortlistedCandidates: ShortlistedCandidate[] = [
+  {
+    id: 'cand-001',
+    name: 'Aanya Sharma',
+    email: 'aanya.sharma@example.com',
+    score: 92,
+    status: 'shortlisted',
+    interviewSlot: 'Feb 09, 2026 · 10:30 AM',
+    skills: ['React', 'TypeScript', 'Tailwind', 'Jest'],
+    resumeScore: 88,
+    aiSummary: 'Strong FE fundamentals with solid testing practices and API design exposure.',
+    notes: 'Prior experience scaling component libraries.'
+  },
+  {
+    id: 'cand-002',
+    name: 'Rohit Verma',
+    email: 'rohit.verma@example.com',
+    score: 86,
+    status: 'shortlisted',
+    interviewSlot: 'Feb 09, 2026 · 02:00 PM',
+    skills: ['React', 'Redux', 'TypeScript', 'Accessibility'],
+    resumeScore: 83,
+    aiSummary: 'Balanced profile with emphasis on state management and accessibility.',
+    notes: 'Recommended to probe advanced React patterns.'
+  },
+  {
+    id: 'cand-003',
+    name: 'Meera Iyer',
+    email: 'meera.iyer@example.com',
+    score: 81,
+    status: 'shortlisted',
+    interviewSlot: 'Feb 10, 2026 · 11:15 AM',
+    skills: ['React', 'TypeScript', 'GraphQL', 'Cypress'],
+    resumeScore: 79,
+    aiSummary: 'Hands-on with GraphQL and E2E testing; good collaboration signals.',
+    notes: 'Follow up on performance optimization experience.'
+  }
+];
+
 export default function AssessmentDetails({ user, onLogout }: AssessmentDetailsProps) {
   const navigate = useNavigate();
   const { assessmentId } = useParams();
@@ -37,6 +105,24 @@ export default function AssessmentDetails({ user, onLogout }: AssessmentDetailsP
       try {
         setLoading(true);
         setError('');
+        if (useMockData) {
+          setAssessment(mockAssessment);
+          setIsCompleted(true);
+          setApplication({
+            id: 'app-001',
+            candidateId: user.id,
+            assessmentId,
+            name: user.name,
+            email: user.email,
+            experienceYears: 3,
+            skills: ['React', 'TypeScript', 'Testing'],
+            status: 'shortlisted',
+            score: 88,
+            createdAt: new Date().toISOString(),
+            resumeFileName: 'candidate_resume.pdf'
+          });
+          return;
+        }
         const [details, completion] = await Promise.all([
           getAssessmentDetails(assessmentId),
           getAssessmentCompletion(assessmentId, user.id)
@@ -222,6 +308,51 @@ export default function AssessmentDetails({ user, onLogout }: AssessmentDetailsP
                     {assessment.includeInterview ? 'AI interview unlocks after you qualify the assessment.' : 'No interview required.'}
                   </p>
                 </div>
+              </div>
+            </div>
+
+            <div className="bg-white rounded-2xl shadow-md border border-gray-100 p-8">
+              <div className="flex items-center justify-between mb-6">
+                <h2 className="text-xl font-bold text-gray-900">AI Interview Shortlist</h2>
+                <span className="text-sm text-gray-600">
+                  {mockShortlistedCandidates.length} candidates shortlisted
+                </span>
+              </div>
+              <div className="grid gap-4">
+                {mockShortlistedCandidates.map(candidate => (
+                  <div key={candidate.id} className="border border-gray-200 rounded-xl p-5">
+                    <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+                      <div>
+                        <div className="text-lg font-semibold text-gray-900">{candidate.name}</div>
+                        <div className="text-sm text-gray-600">{candidate.email}</div>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <span className="px-3 py-1 rounded-full text-xs font-semibold bg-green-50 text-green-700">
+                          {candidate.status}
+                        </span>
+                        <div className="text-sm text-gray-600">Score: {candidate.score}%</div>
+                      </div>
+                    </div>
+
+                    <div className="grid md:grid-cols-3 gap-4 mt-4">
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">Interview Slot</div>
+                        <div className="text-sm font-semibold text-gray-900">{candidate.interviewSlot}</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">Resume Score</div>
+                        <div className="text-sm font-semibold text-gray-900">{candidate.resumeScore}%</div>
+                      </div>
+                      <div className="bg-gray-50 rounded-lg p-3">
+                        <div className="text-xs text-gray-500">Top Skills</div>
+                        <div className="text-sm text-gray-900">{candidate.skills.join(', ')}</div>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 text-sm text-gray-700">{candidate.aiSummary}</div>
+                    <div className="mt-2 text-sm text-gray-600">Notes: {candidate.notes}</div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>

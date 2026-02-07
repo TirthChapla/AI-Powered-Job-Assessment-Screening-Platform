@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>VoiceHire FAQ Plugin - Development</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              "vh-primary": "#6366f1",
+              "vh-secondary": "#8b5cf6",
+              "vh-accent": "#06b6d4",
+              "vh-dark": "#0f172a",
+              "vh-darker": "#020617",
+              "vh-card": "#1e293b",
+              "vh-border": "#334155",
+            },
+          },
+        },
+      };
+    </script>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        background: #0f172a;
+        min-height: 100vh;
+      }
+
+      .code-block {
+        background: #1e293b;
+        border: 1px solid #334155;
+        padding: 1rem;
+        border-radius: 8px;
+        font-family: "Monaco", "Courier New", monospace;
+        font-size: 14px;
+        overflow-x: auto;
+        color: #e2e8f0;
+      }
+
+      .glass-card {
+        background: rgba(30, 41, 59, 0.8);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(51, 65, 85, 0.3);
+      }
+    </style>
+  </head>
+  <body class="bg-vh-dark text-slate-100">
+    <!-- Header -->
+    <header class="glass-card border-b border-vh-border/30">
+      <div class="container mx-auto px-6 py-4">
+        <div class="flex items-center justify-between">
+          <div>
+            <h1 class="text-xl font-bold text-slate-100">
+              VoiceHire FAQ Plugin
+            </h1>
+            <p class="text-sm text-slate-400">Development Environment</p>
+          </div>
+          <div class="flex items-center space-x-2">
+            <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            <span class="text-sm text-slate-400">Live</span>
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container mx-auto px-6 py-8">
+      <!-- Plugin Status -->
+      <div class="glass-card rounded-lg p-6 mb-8">
+        <h2 class="text-lg font-semibold mb-4 text-slate-100">Plugin Status</h2>
+
+        <div id="plugin-status" class="mb-6">
+          <div
+            class="flex items-center space-x-3 p-3 bg-vh-darker/50 rounded border border-vh-border/30">
+            <span class="w-3 h-3 bg-yellow-400 rounded-full"></span>
+            <span class="text-slate-200">Initializing plugin...</span>
+          </div>
+        </div>
+
+        <div class="glass-card rounded-lg p-6 mb-8">
+          <h3 class="font-medium text-slate-200 mb-3">Test Actions</h3>
+          <div class="flex flex-wrap gap-3">
+            <button
+              id="test-open"
+              class="bg-vh-primary hover:bg-vh-primary/80 px-6 py-2 rounded text-white font-medium transition-colors">
+              Open FAQ Panel
+            </button>
+            <button
+              id="test-voice"
+              class="bg-vh-secondary hover:bg-vh-secondary/80 px-6 py-2 rounded text-white font-medium transition-colors"
+              disabled>
+              Test Voice Connection
+            </button>
+            <button
+              id="reset-user-data"
+              class="bg-red-600 hover:bg-red-700 px-6 py-2 rounded text-white font-medium transition-colors">
+              Reset User Data
+            </button>
+            <button
+              id="show-user-stats"
+              class="bg-blue-600 hover:bg-blue-700 px-6 py-2 rounded text-white font-medium transition-colors">
+              Show User Stats
+            </button>
+          </div>
+        </div>
+
+        <!-- Setup Instructions -->
+        <div class="glass-card rounded-lg p-6">
+          <h2 class="text-lg font-semibold mb-4 text-slate-100">
+            Setup Instructions
+          </h2>
+
+          <div class="space-y-4">
+            <div>
+              <h3 class="font-medium text-vh-accent mb-2">1. Build Project</h3>
+              <div class="code-block">pnpm build</div>
+            </div>
+
+            <div>
+              <h3 class="font-medium text-vh-accent mb-2">
+                2. Start Dev Server
+              </h3>
+              <div class="code-block">pnpm dev</div>
+            </div>
+
+            <div>
+              <h3 class="font-medium text-vh-accent mb-2">3. LiveKit Config</h3>
+              <p class="text-sm text-slate-300 mb-2">
+                API-based token generation with auto room creation
+              </p>
+              <ul class="text-sm text-slate-300 space-y-1">
+                <li>• LiveKit server URL</li>
+                <li>• Token API endpoint</li>
+                <li>• Auto-generated rooms</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Load the FAQ Plugin -->
+    <script type="module">
+      import { FAQWidget } from "./dist/vh-faq-plugin.es.js";
+
+      // Simple status tracking
+      function updateStatus(message, type = "info") {
+        const statusDiv = document.getElementById("plugin-status");
+        const colors = {
+          success: "bg-green-400",
+          error: "bg-red-400",
+          warning: "bg-yellow-400",
+          info: "bg-vh-accent",
+        };
+
+        statusDiv.innerHTML = `
+          <div class="flex items-center space-x-3 p-3 bg-vh-darker/50 rounded border border-vh-border/30">
+            <span class="w-3 h-3 ${colors[type]} rounded-full"></span>
+            <span class="text-slate-200">${message}</span>
+            <div class="ml-auto text-xs text-slate-400">
+              ${new Date().toLocaleTimeString()}
+            </div>
+          </div>
+        `;
+      }
+
+      // Initialize plugin
+      let faqWidget;
+
+      try {
+        updateStatus("Creating FAQ widget...", "info");
+
+        faqWidget = new FAQWidget({
+          agentName: "Veeaa",
+          position: "bottom-right",
+          buttonText: "Talk to Veeaa",
+          autoIncomingCall: {
+            enabled: true,
+            developerMode: true, // Enable for development/testing
+            delayMs: 3000, // Shorter delay for testing
+            sound: {
+              enabled: true,
+              volume: 0.2,
+              respectSystemVolume: true,
+              maxDurationMs: 2000,
+            },
+          },
+        });
+
+        updateStatus("Initializing voice client...", "info");
+
+        await faqWidget.initialize({
+          livekitUrl: "wss://voicehireats-website-lvl2w305.livekit.cloud",
+          tokenApiUrl: "https://faq-api.voicehireats.com/generate-token",
+          participantName: "Dev User",
+          enableEchoCancellation: true,
+          enableNoiseSuppression: true,
+          autoGainControl: true,
+        });
+
+        updateStatus("Plugin ready! Voice agent active.", "success");
+        document.getElementById("test-voice").disabled = false;
+      } catch (error) {
+        console.warn("Voice initialization failed:", error.message);
+        updateStatus("Plugin loaded. Voice connection failed.", "error");
+      }
+
+      // Test button handlers
+      document.getElementById("test-open").addEventListener("click", () => {
+        const faqButton = document.querySelector("#vh-faq-toggle");
+        if (faqButton) {
+          faqButton.click();
+          updateStatus("FAQ panel opened", "success");
+        } else {
+          updateStatus("FAQ widget not found", "error");
+        }
+      });
+
+      document.getElementById("test-voice").addEventListener("click", () => {
+        const voiceButton = document.querySelector("#vh-faq-voice-btn");
+        if (voiceButton) {
+          voiceButton.click();
+          updateStatus("Voice test initiated", "success");
+        } else {
+          updateStatus("Open FAQ panel first", "warning");
+        }
+      });
+
+      // Developer utility buttons
+      document
+        .getElementById("reset-user-data")
+        .addEventListener("click", () => {
+          if (faqWidget) {
+            faqWidget.resetUserPreferences();
+            updateStatus("User interaction data reset", "success");
+          }
+        });
+
+      document
+        .getElementById("show-user-stats")
+        .addEventListener("click", () => {
+          if (faqWidget) {
+            const stats = faqWidget.getUserStats();
+            console.log("User Interaction Stats:", stats);
+            updateStatus(
+              `Stats logged to console. Notifications shown: ${stats.notificationCount}`,
+              "info"
+            );
+          }
+        });
+
+      // Simple logging
+      console.log("VoiceHire FAQ Plugin - Dev Environment");
+      console.log("Plugin loaded:", !!faqWidget);
+      console.log("Look for 'Talk to Veeaa' button in bottom-right corner");
+      console.log(
+        "Developer mode enabled - notifications will show on every page load"
+      );
+    </script>
+  </body>
+</html>

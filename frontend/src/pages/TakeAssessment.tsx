@@ -25,6 +25,61 @@ interface TakeAssessmentProps {
   onLogout: () => void;
 }
 
+const useMockData = true;
+
+const mockAssessment: AssessmentDetailsType = {
+  id: 'assess-201',
+  title: 'AI Screening: Frontend Engineer',
+  role: 'Frontend Engineer',
+  company: 'HireIQ Labs',
+  status: 'active',
+  duration: 90,
+  requiredSkills: ['React', 'TypeScript', 'Testing'],
+  minExperience: 2,
+  minMatchScore: 75,
+  includeInterview: true,
+  createdAt: new Date().toISOString()
+};
+
+const mockApplication: AssessmentApplication = {
+  id: 'app-201',
+  assessmentId: 'assess-201',
+  candidateId: 'cand-201',
+  name: 'Aanya Sharma',
+  email: 'aanya.sharma@example.com',
+  experienceYears: 3,
+  skills: ['React', 'TypeScript', 'Testing'],
+  resumeSummary: 'Built component libraries and led UI performance initiatives.',
+  resumeFileName: 'aanya_sharma_resume.pdf',
+  status: 'shortlisted',
+  score: 92,
+  createdAt: new Date().toISOString()
+};
+
+const mockQuestions: AssessmentQuestion[] = [
+  {
+    id: 'q-101',
+    type: 'mcq',
+    question: 'Which React hook is used to memoize a callback function?',
+    options: ['useMemo', 'useCallback', 'useEffect', 'useRef'],
+    correctAnswer: 'useCallback'
+  },
+  {
+    id: 'q-102',
+    type: 'subjective',
+    question: 'Describe how you would improve the performance of a slow React page.'
+  },
+  {
+    id: 'q-103',
+    type: 'coding',
+    question: 'Write a function that returns the first non-repeating character in a string.',
+    testCases: [
+      { input: 'aabbcdd', output: 'c' },
+      { input: 'aabbcc', output: '' }
+    ]
+  }
+];
+
 export default function TakeAssessment({ user, onLogout }: TakeAssessmentProps) {
   const navigate = useNavigate();
   const { assessmentId } = useParams();
@@ -33,6 +88,11 @@ export default function TakeAssessment({ user, onLogout }: TakeAssessmentProps) 
   const [questions, setQuestions] = useState<AssessmentQuestion[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [currentQuestion, setCurrentQuestion] = useState(0);
+  const [answers, setAnswers] = useState<Record<string, any>>({});
+  const [timeLeft, setTimeLeft] = useState(0);
+  const [code, setCode] = useState('// Write your code here\n');
+  const assessmentQuestions = useMemo(() => questions, [questions]);
 
   useEffect(() => {
     const loadAssessment = async () => {
@@ -40,6 +100,12 @@ export default function TakeAssessment({ user, onLogout }: TakeAssessmentProps) 
       try {
         setLoading(true);
         setError('');
+        if (useMockData) {
+          setAssessment({ ...mockAssessment, id: assessmentId });
+          setQuestions(mockQuestions);
+          setApplication({ ...mockApplication, assessmentId, candidateId: user.id });
+          return;
+        }
         const [details, questionsResponse] = await Promise.all([
           getAssessmentDetails(assessmentId),
           getAssessmentQuestions(assessmentId)
@@ -58,6 +124,27 @@ export default function TakeAssessment({ user, onLogout }: TakeAssessmentProps) 
 
     loadAssessment();
   }, [assessmentId, user.id]);
+
+  useEffect(() => {
+    if (assessment) {
+      setTimeLeft(assessment.duration * 60);
+    }
+  }, [assessment]);
+
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 1) {
+          clearInterval(timer);
+          handleSubmit();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, []);
 
   if (loading) {
     return (
@@ -102,32 +189,6 @@ export default function TakeAssessment({ user, onLogout }: TakeAssessmentProps) 
       </div>
     );
   }
-  const [currentQuestion, setCurrentQuestion] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, any>>({});
-  const [timeLeft, setTimeLeft] = useState(0);
-  const [code, setCode] = useState('// Write your code here\n');
-  const assessmentQuestions = useMemo(() => questions, [questions]);
-
-  useEffect(() => {
-    if (assessment) {
-      setTimeLeft(assessment.duration * 60);
-    }
-  }, [assessment]);
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
-          clearInterval(timer);
-          handleSubmit();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, []);
 
   const formatTime = (seconds: number) => {
     const hours = Math.floor(seconds / 3600);

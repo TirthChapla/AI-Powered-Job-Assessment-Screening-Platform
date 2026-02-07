@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
-import { Zap, LogOut, MessageCircle, Send, Mic, MicOff, Brain, Clock } from 'lucide-react';
+import { Zap, LogOut, Mic, MicOff, Brain, Clock, Video, VideoOff, PhoneCall, PhoneOff } from 'lucide-react';
 import ThemeToggle from '../components/ThemeToggle';
 import { getAssessmentCompletion, markInterviewCompletion } from '../data/api';
 
@@ -23,6 +23,18 @@ interface Message {
   timestamp: Date;
 }
 
+const useMockData = true;
+
+const mockInterviewInfo = {
+  role: 'Frontend Engineer',
+  company: 'HireIQ Labs',
+  assessmentTitle: 'AI Screening: Frontend Engineer',
+  score: 92,
+  interviewSlot: 'Feb 09, 2026 · 10:30 AM',
+  focusAreas: ['React', 'TypeScript', 'Testing', 'Performance'],
+  notes: 'Strong UI fundamentals. Probe advanced hooks and architecture choices.'
+};
+
 export default function Interview({ user, onLogout }: InterviewProps) {
   const navigate = useNavigate();
   const { assessmentId } = useParams();
@@ -34,7 +46,14 @@ export default function Interview({ user, onLogout }: InterviewProps) {
   const [isTyping, setIsTyping] = useState(false);
   const [currentQuestion, setCurrentQuestion] = useState(1);
   const [timeElapsed, setTimeElapsed] = useState(0);
+  const [interviewRole, setInterviewRole] = useState(mockInterviewInfo.role);
+  const [isInCall, setIsInCall] = useState(false);
+  const [isMicMuted, setIsMicMuted] = useState(false);
+  const [isCamMuted, setIsCamMuted] = useState(false);
+  const [mediaError, setMediaError] = useState('');
+  const [mediaStream, setMediaStream] = useState<MediaStream | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const videoRef = useRef<HTMLVideoElement>(null);
 
   const interviewQuestions = [
     'Tell me about your experience with React and how you\'ve used it in production applications.',
@@ -49,6 +68,11 @@ export default function Interview({ user, onLogout }: InterviewProps) {
       if (!assessmentId) return;
       try {
         setLoading(true);
+        if (useMockData) {
+          setIsCompleted(true);
+          setInterviewRole(mockInterviewInfo.role);
+          return;
+        }
         const response = await getAssessmentCompletion(assessmentId, user.id);
         setIsCompleted(response.completed);
       } finally {
@@ -64,7 +88,7 @@ export default function Interview({ user, onLogout }: InterviewProps) {
     const initialMessage: Message = {
       id: '1',
       sender: 'ai',
-      text: `Hello ${user.name}! I'm your AI interviewer. I'll be conducting a technical interview for the Senior Frontend Developer position. This interview will take approximately 20-30 minutes. Are you ready to begin?`,
+      text: `Hello ${user.name}! I'm your AI interviewer. I'll be conducting a technical interview for the ${interviewRole} position. This interview will take approximately 20-30 minutes. Are you ready to begin?`,
       timestamp: new Date()
     };
     setMessages([initialMessage]);
@@ -74,7 +98,20 @@ export default function Interview({ user, onLogout }: InterviewProps) {
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isCompleted, user.name]);
+  }, [interviewRole, isCompleted, user.name]);
+
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }, [messages]);
+
+  useEffect(() => {
+    if (!videoRef.current) return;
+    if (mediaStream) {
+      videoRef.current.srcObject = mediaStream;
+    } else {
+      videoRef.current.srcObject = null;
+    }
+  }, [mediaStream]);
 
   if (loading) {
     return (
@@ -102,10 +139,6 @@ export default function Interview({ user, onLogout }: InterviewProps) {
       </div>
     );
   }
-
-  useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
 
   const handleSendMessage = async () => {
     if (!inputMessage.trim()) return;
@@ -143,10 +176,61 @@ export default function Interview({ user, onLogout }: InterviewProps) {
   };
 
   const handleEndInterview = () => {
+    setIsInCall(false);
+    if (mediaStream) {
+      mediaStream.getTracks().forEach((track) => track.stop());
+      setMediaStream(null);
+    }
     if (assessmentId) {
       markInterviewCompletion(assessmentId, user.id);
     }
     navigate('/candidate');
+  };
+
+  const handleStartInterview = async () => {
+    try {
+      setMediaError('');
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      setMediaStream(stream);
+      setIsMicMuted(false);
+      setIsCamMuted(false);
+      stream.getAudioTracks().forEach((track) => {
+        track.enabled = true;
+      });
+      stream.getVideoTracks().forEach((track) => {
+        track.enabled = true;
+      });
+      setIsInCall(true);
+      setIsRecording(true);
+    } catch {
+      setMediaError('Camera and microphone access is required to start the interview.');
+      setIsInCall(false);
+      setIsRecording(false);
+    }
+  };
+
+  const handleToggleMic = () => {
+    setIsMicMuted((prev) => {
+      const next = !prev;
+      if (mediaStream) {
+        mediaStream.getAudioTracks().forEach((track) => {
+          track.enabled = !next;
+        });
+      }
+      return next;
+    });
+  };
+
+  const handleToggleCam = () => {
+    setIsCamMuted((prev) => {
+      const next = !prev;
+      if (mediaStream) {
+        mediaStream.getVideoTracks().forEach((track) => {
+          track.enabled = !next;
+        });
+      }
+      return next;
+    });
   };
 
   const formatTime = (seconds: number) => {
@@ -163,7 +247,7 @@ export default function Interview({ user, onLogout }: InterviewProps) {
             <Zap className="w-8 h-8 text-blue-600" />
             <div>
               <div className="text-xl font-bold text-gray-900">AI Technical Interview</div>
-              <div className="text-sm text-gray-600">Senior Frontend Developer</div>
+              <div className="text-sm text-gray-600">{interviewRole}</div>
             </div>
           </div>
           <div className="flex items-center space-x-4">
@@ -183,6 +267,31 @@ export default function Interview({ user, onLogout }: InterviewProps) {
       </nav>
 
       <div className="flex-1 max-w-5xl mx-auto w-full px-6 py-8 flex flex-col">
+        <div className="mb-6 bg-white rounded-xl shadow-md border border-gray-100 p-5">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div>
+              <div className="text-sm text-gray-500">Interview Brief</div>
+              <div className="text-lg font-semibold text-gray-900">{mockInterviewInfo.assessmentTitle}</div>
+              <div className="text-sm text-gray-600">{mockInterviewInfo.company}</div>
+            </div>
+            <div className="text-sm text-gray-600">Slot: {mockInterviewInfo.interviewSlot}</div>
+          </div>
+          <div className="grid md:grid-cols-3 gap-4 mt-4">
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="text-xs text-gray-500">AI Match Score</div>
+              <div className="text-sm font-semibold text-gray-900">{mockInterviewInfo.score}%</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="text-xs text-gray-500">Focus Areas</div>
+              <div className="text-sm text-gray-900">{mockInterviewInfo.focusAreas.join(', ')}</div>
+            </div>
+            <div className="bg-gray-50 rounded-lg p-3">
+              <div className="text-xs text-gray-500">Notes</div>
+              <div className="text-sm text-gray-900">{mockInterviewInfo.notes}</div>
+            </div>
+          </div>
+        </div>
+
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center space-x-3">
             <Brain className="w-6 h-6 text-blue-600" />
@@ -191,122 +300,90 @@ export default function Interview({ user, onLogout }: InterviewProps) {
               <div className="text-sm text-gray-600">Question {Math.min(currentQuestion, interviewQuestions.length)} of {interviewQuestions.length}</div>
             </div>
           </div>
-          <button
-            onClick={handleEndInterview}
-            className="px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition shadow-md hover:shadow-lg"
-          >
-            End Interview
-          </button>
+          {isInCall ? (
+            <button
+              onClick={handleEndInterview}
+              className="flex items-center space-x-2 px-6 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 font-medium transition shadow-md hover:shadow-lg"
+            >
+              <PhoneOff className="w-5 h-5" />
+              <span>End Interview</span>
+            </button>
+          ) : (
+            <button
+              onClick={handleStartInterview}
+              className="flex items-center space-x-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 font-medium transition shadow-md hover:shadow-lg"
+            >
+              <PhoneCall className="w-5 h-5" />
+              <span>Start Interview</span>
+            </button>
+          )}
         </div>
 
-        <div className="flex-1 bg-white rounded-xl shadow-md border border-gray-100 flex flex-col overflow-hidden">
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={`flex ${message.sender === 'user' ? 'justify-end' : 'justify-start'}`}
-              >
-                <div className={`max-w-2xl ${message.sender === 'user' ? 'order-2' : 'order-1'}`}>
-                  <div className="flex items-center space-x-2 mb-1">
-                    {message.sender === 'ai' && (
-                      <>
-                        <Brain className="w-4 h-4 text-blue-600" />
-                        <span className="text-sm font-semibold text-gray-900">AI Interviewer</span>
-                      </>
-                    )}
-                    {message.sender === 'user' && (
-                      <span className="text-sm font-semibold text-gray-900">{user.name}</span>
-                    )}
-                  </div>
-                  <div
-                    className={`p-4 rounded-lg ${
-                      message.sender === 'ai'
-                        ? 'bg-blue-50 border border-blue-200 text-gray-900'
-                        : 'bg-blue-600 text-white'
-                    }`}
-                  >
-                    <p className="leading-relaxed">{message.text}</p>
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {message.timestamp.toLocaleTimeString()}
-                  </div>
+        {mediaError && (
+          <div className="mb-6 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg text-sm">
+            {mediaError}
+          </div>
+        )}
+
+          <div className="grid md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <Brain className="w-5 h-5 text-blue-600" />
+                  <span className="font-semibold text-gray-900">AI Interviewer</span>
                 </div>
+                <span className="text-xs text-gray-500">Voice only</span>
               </div>
-            ))}
+              <div className="h-56 rounded-lg border border-dashed border-gray-300 flex items-center justify-center text-gray-500">
+                AI voice channel ready
+              </div>
+              <div className="mt-4 flex items-center justify-between text-sm text-gray-600">
+                <span>Status: {isInCall ? 'Live' : 'Idle'}</span>
+                <span>Mic: {isRecording ? 'On' : 'Off'}</span>
+              </div>
+            </div>
 
-            {isTyping && (
-              <div className="flex justify-start">
-                <div className="max-w-2xl">
-                  <div className="flex items-center space-x-2 mb-1">
-                    <Brain className="w-4 h-4 text-blue-600" />
-                    <span className="text-sm font-semibold text-gray-900">AI Interviewer</span>
-                  </div>
-                  <div className="p-4 rounded-lg bg-blue-50 border border-blue-200">
-                    <div className="flex space-x-2">
-                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce"></div>
-                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.1s' }}></div>
-                      <div className="w-2 h-2 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: '0.2s' }}></div>
-                    </div>
-                  </div>
+            <div className="bg-white rounded-xl shadow-md border border-gray-100 p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center space-x-2">
+                  <Video className="w-5 h-5 text-blue-600" />
+                  <span className="font-semibold text-gray-900">Candidate Video</span>
                 </div>
+                <span className="text-xs text-gray-500">Camera + mic</span>
               </div>
-            )}
-            <div ref={messagesEndRef} />
-          </div>
-
-          <div className="border-t border-gray-200 p-4">
-            <div className="flex items-center space-x-3">
-              <button
-                onClick={() => setIsRecording(!isRecording)}
-                className={`p-3 rounded-lg transition ${
-                  isRecording
-                    ? 'bg-red-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                {isRecording ? <MicOff className="w-5 h-5" /> : <Mic className="w-5 h-5" />}
-              </button>
-              <input
-                type="text"
-                value={inputMessage}
-                onChange={(e) => setInputMessage(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
-                placeholder="Type your answer here..."
-                className="flex-1 px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition"
-                disabled={isTyping}
-              />
-              <button
-                onClick={handleSendMessage}
-                disabled={!inputMessage.trim() || isTyping}
-                className="p-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-md hover:shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <Send className="w-5 h-5" />
-              </button>
-            </div>
-            <div className="mt-2 text-xs text-gray-500">
-              {isRecording ? (
-                <span className="text-red-600 font-semibold">Recording... Click the microphone to stop</span>
-              ) : (
-                'Press Enter to send or click the microphone to use voice'
-              )}
+              <div className="h-56 rounded-lg border border-dashed border-gray-300 flex items-center justify-center text-gray-500 overflow-hidden">
+                {mediaStream ? (
+                  <video ref={videoRef} autoPlay playsInline muted className="h-full w-full object-cover" />
+                ) : (
+                  <span>Camera preview will appear here</span>
+                )}
+              </div>
+              <div className="mt-4 flex flex-wrap gap-2">
+                <button
+                  onClick={handleToggleMic}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                    isMicMuted
+                      ? 'bg-red-50 text-red-700 border border-red-200'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {isMicMuted ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                  <span>{isMicMuted ? 'Unmute Mic' : 'Mute Mic'}</span>
+                </button>
+                <button
+                  onClick={handleToggleCam}
+                  className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium transition ${
+                    isCamMuted
+                      ? 'bg-red-50 text-red-700 border border-red-200'
+                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
+                >
+                  {isCamMuted ? <VideoOff className="w-4 h-4" /> : <Video className="w-4 h-4" />}
+                  <span>{isCamMuted ? 'Turn Camera On' : 'Turn Camera Off'}</span>
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-
-        <div className="mt-6 bg-blue-50 border border-blue-200 rounded-lg p-4">
-          <div className="flex items-start space-x-3">
-            <MessageCircle className="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5" />
-            <div className="text-sm text-blue-900">
-              <div className="font-semibold mb-1">Interview Tips</div>
-              <ul className="list-disc list-inside space-y-1 text-blue-800">
-                <li>Take your time to think before answering</li>
-                <li>Provide specific examples from your experience</li>
-                <li>Ask clarifying questions if needed</li>
-                <li>Be honest about what you know and don't know</li>
-              </ul>
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );

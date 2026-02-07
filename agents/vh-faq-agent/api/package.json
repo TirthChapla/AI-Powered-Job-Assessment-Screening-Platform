@@ -1,0 +1,16 @@
+{
+  "name": "vh-faq-agent-api",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "build": "node build.mjs",
+    "deploy": "pnpm build && powershell -ExecutionPolicy Bypass -File upload-function.ps1"
+  },
+  "dependencies": {
+    "livekit-server-sdk": "^2.13.0"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.0",
+    "terser": "^5.24.0"
+  }
+}

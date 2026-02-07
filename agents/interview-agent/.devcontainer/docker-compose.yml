@@ -1,0 +1,16 @@
+version: "3.8"
+services:
+  platform-agent:
+    build:
+      context: ../
+      dockerfile: Dockerfile.dev
+    volumes:
+      - ../:/workspace
+    working_dir: /workspace
+  # faq-agent:
+  #   build:
+  #     context: ../agents/vh-faq-agent/livekit-agent
+  #     dockerfile: Dockerfile.dev
+  #   volumes:
+  #     - ../agents/vh-faq-agent/livekit-agent:/workspace
+  #   working_dir: /workspace
