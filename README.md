@@ -88,7 +88,7 @@ The AI asks role-specific questions, evaluates responses (text or voice), and as
 - JWT Authentication
 
 ## AI / NLP
-- LLM / OpenAI API
+- LLM / Gemini API
 - Prompt-based job description parsing
 - AI scoring for subjective answers
 - AI-based interview evaluation
@@ -225,3 +225,4 @@ MIT License
 
 
 # System Architecture
+
